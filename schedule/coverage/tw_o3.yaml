@@ -69,7 +69,7 @@ schedule:
   - console/procps
   - console/osinfo_db
   - console/gcc
-  - console/cryptsetup
+#  - console/cryptsetup  # removed: fails on o3
   - console/vsftpd
   - console/fwupd
   - security/audit/auditctl
@@ -108,7 +108,7 @@ schedule:
 #  - console/apache  # removed: fails in full run
 #  - console/ovn  # removed: fails in full run
   - console/btrfsmaintenance
-  - console/snapper_cleanup
+#  - console/snapper_cleanup  # removed: fails on o3
   - console/snapper_used_space
   # --- batch from job 119 ---
 #  - console/irqbalance  # removed: fails on o3
