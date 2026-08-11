@@ -1,0 +1,42 @@
+name: coverage - test risky six modules
+description: >
+    Test if ping/gdb/sudo/lsof/perf/cryptsetup failures wipe
+    coverage data via snapshot rollback on o3.
+schedule:
+  - autoyast/prepare_profile
+  - installation/isosize
+  - installation/bootloader_uefi
+  - autoyast/installation
+  - autoyast/console
+  - autoyast/login
+  - autoyast/autoyast_reboot
+  - installation/grub_test
+  - installation/first_boot
+  - console/system_prepare
+  - coverage/coverage_setup
+  - console/tar
+  - console/curl_https
+  - console/kmod
+  - console/ping
+  - console/gdb
+  - console/sudo
+  - console/lsof
+  - console/perf
+  - console/cryptsetup
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    tar: /usr/bin/tar
+    curl: /usr/bin/curl
+    kmod: /usr/bin/kmod
+    iputils: /usr/bin/ping
+    gdb: /usr/bin/gdb
+    sudo: /usr/bin/sudo
+    lsof: /usr/bin/lsof
+    perf: /usr/bin/perf
+    cryptsetup: /usr/sbin/cryptsetup
