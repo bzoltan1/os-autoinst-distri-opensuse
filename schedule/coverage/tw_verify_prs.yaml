@@ -1,0 +1,23 @@
+name: verify PRs 26404-26410
+description: >
+    Minimal schedule to verify PRs for lsof, cryptsetup, libaom,
+    yast_lang, yast_timezone, gdb, perf.
+schedule:
+  - autoyast/prepare_profile
+  - installation/isosize
+  - installation/bootloader_uefi
+  - autoyast/installation
+  - autoyast/console
+  - autoyast/login
+  - autoyast/autoyast_reboot
+  - installation/grub_test
+  - installation/first_boot
+  - console/system_prepare
+  # --- modules under test ---
+  - console/lsof
+  - console/cryptsetup
+  - console/libaom
+  - yast2_cmd/yast_lang
+  - yast2_cmd/yast_timezone
+  - console/gdb
+  - console/perf
