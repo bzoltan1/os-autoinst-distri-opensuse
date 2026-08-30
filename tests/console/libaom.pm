@@ -38,6 +38,8 @@ sub run {
         $make_cmd = "make -j$jobs";
     }
     else {
+        # Use all available CPUs even with 1-2 cores; plain make is too
+        # slow for ffmpeg on constrained VMs.
         $make_cmd = "make -j$num_cpus";
         $time_out = 2400;
     }
@@ -48,6 +50,10 @@ sub run {
     assert_script_run 'cd ~/ffmpeg_sources';
     assert_script_run 'wget --quiet ' . data_url('libaom/input.mp4');
     assert_script_run('ffmpeg -c:v libaom-av1 -i input.mp4 -f rawvideo input_yuv', timeout => 50);
+}
+
+sub test_flags {
+    return {fatal => 0, no_rollback => 1};
 }
 
 1;

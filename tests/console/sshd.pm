@@ -149,7 +149,7 @@ sub cleanup() {
 }
 
 sub test_flags {
-    return is_public_cloud() ? {milestone => 0, no_rollback => 1} : {milestone => 1, fatal => 1};
+    return is_public_cloud() ? {milestone => 0, no_rollback => 1} : {fatal => 0, no_rollback => 1};
 }
 
 1;

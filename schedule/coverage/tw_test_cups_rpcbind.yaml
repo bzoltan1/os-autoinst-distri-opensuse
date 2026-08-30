@@ -1,0 +1,29 @@
+name: coverage - test cups and rpcbind with 0.8.3
+description: >
+    Quick test of cups and rpcbind daemons with coverage-tools 0.8.3.
+schedule:
+  - autoyast/prepare_profile
+  - installation/isosize
+  - installation/bootloader_uefi
+  - autoyast/installation
+  - autoyast/console
+  - autoyast/login
+  - autoyast/autoyast_reboot
+  - installation/grub_test
+  - installation/first_boot
+  - console/system_prepare
+  - coverage/coverage_setup
+  - console/cups
+  - console/rpcbind
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    cups:
+      - /usr/sbin/cupsd
+      - /usr/bin/lpstat
+    rpcbind: /usr/sbin/rpcbind

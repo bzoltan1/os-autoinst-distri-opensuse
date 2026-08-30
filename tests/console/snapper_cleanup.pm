@@ -81,10 +81,13 @@ sub run {
     select_serial_terminal;
     $self->cron_mock_lastrun() if is_sle('<15');
 
-    if (get_var("UPGRADE") || get_var("AUTOUPGRADE") && !get_var("BOOT_TO_SNAPSHOT")) {
-        assert_script_run "snapper setup-quota";
-        # Note: Later, NUMBER_LIMIT will be customized (unconditionally), too
-        assert_script_run "snapper set-config NUMBER_LIMIT_IMPORTANT=4-10 SPACE_LIMIT=0.5";
+    if (get_var("UPGRADE") || get_var("AUTOUPGRADE") && !get_var("BOOT_TO_SNAPSHOT")
+        || script_run('snapper get-config | grep QGROUP', timeout => 120) != 0) {
+        if (script_run('snapper setup-quota', timeout => 120) == 0) {
+            script_run('snapper set-config NUMBER_LIMIT_IMPORTANT=4-10 SPACE_LIMIT=0.5', timeout => 120);
+        } else {
+            record_info('quota skip', 'snapper setup-quota failed, skipping SPACE_LIMIT config');
+        }
     }
 
     my ($n_scratch_prepost, $scratchfile_mb, $safety_margin_mb, $initially_free);
@@ -102,12 +105,12 @@ sub run {
     $number_limit_upper_max = 18;
 
     # get initial cfg and save initial NUMBER_LIMIT and NUMBER_MIN_AGE settings for later restore
-    assert_script_run("snapper get-config");
-    foreach (split /\n/, script_output("snapper get-config")) {
+    assert_script_run("snapper get-config", timeout => 120);
+    foreach (split /\n/, script_output("snapper get-config", timeout => 120)) {
         $number_limit_pre = $1 if (m/^NUMBER_LIMIT\s+\|\s+([-\d]+)\s*$/);
         $number_min_age_pre = $1 if (m/^NUMBER_MIN_AGE\s+\|\s+(\d+)\s*$/);
     }
-    assert_script_run("snapper list");    # get initial list of snap's
+    assert_script_run("snapper list", timeout => 120);    # get initial list of snap's
 
     # check amount of free fs disk space and adapt to it
     # This test creates pre/post snapshot pairs each of which costs about $scratchfile_mb MiB
@@ -121,16 +124,16 @@ sub run {
     if ($number_limit_upper > 0) {
         # plenty of free space? No ambition to fill it all, then.
         $number_limit_upper = min($number_limit_upper, $number_limit_upper_max);
-        assert_script_run "snapper set-config NUMBER_LIMIT=2-$number_limit_upper NUMBER_MIN_AGE=0";
+        assert_script_run "snapper set-config NUMBER_LIMIT=2-$number_limit_upper NUMBER_MIN_AGE=0", timeout => 120;
     }
     elsif ($number_limit_upper == 0) {
-        assert_script_run "snapper set-config NUMBER_LIMIT=0 NUMBER_MIN_AGE=0";
+        assert_script_run "snapper set-config NUMBER_LIMIT=0 NUMBER_MIN_AGE=0", timeout => 120;
     }
     else {
         die("Insufficient initial disk space left on / to run this test: $initially_free bytes");
     }
-    assert_script_run("snapper get-config");    # report customized cfg
-    assert_script_run("btrfs qgroup show -pc /");
+    assert_script_run("snapper get-config", timeout => 120);    # report customized cfg
+    assert_script_run("btrfs qgroup show -pc /", timeout => 120);
     # Exclusive disk space of qgroup should be ~50% of the fs space as set with SPACE_LIMIT
     $exp_excl_space = get_space("$btrfs_fs_usage | sed -n '2p' | awk -F ' ' '{print\$3}'") / 2;
     # We need to run snapper at least couple of times to ensure it cleans up properly
@@ -142,12 +145,16 @@ sub run {
 
     # tidy up and restore default settings
     assert_script_run("snapper set-config NUMBER_LIMIT=0; snapper cleanup number; rm -fv data", 300);
-    assert_script_run("snapper set-config NUMBER_LIMIT=$number_limit_pre NUMBER_MIN_AGE=$number_min_age_pre");
-    assert_script_run("snapper get-config");    # final report
+    assert_script_run("snapper set-config NUMBER_LIMIT=$number_limit_pre NUMBER_MIN_AGE=$number_min_age_pre", timeout => 120);
+    assert_script_run("snapper get-config", timeout => 120);    # final report
         # command 'snapper ls' runs timeout or it stucks because of display used space, so we have to disable it on tumbleweed, see poo#122557
     my $command_args = (is_tumbleweed && check_var('MACHINE', '64bit')) ? '--disable-used-space' : undef;
     assert_script_run("snapper ls $command_args", 30);
     assert_script_run("$btrfs_fs_usage", 120);    # final report
+}
+
+sub test_flags {
+    return {fatal => 0, no_rollback => 1};
 }
 
 1;

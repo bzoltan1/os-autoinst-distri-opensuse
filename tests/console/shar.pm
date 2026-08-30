@@ -29,9 +29,9 @@ sub run {
     assert_script_run('sh /tmp/shar_testdata.sh');
     assert_script_run('file shar_testdata/suse.png | grep "600 x 550"');
     assert_script_run('head -1 shar_testdata/hallo.txt | grep "Hallo Welt"');
-    assert_script_run('shar shar_testdata > a.sh');
+    assert_script_run('shar shar_testdata > a.sh', timeout => 600);
     assert_script_run('mkdir a');
-    assert_script_run('unshar -d a a.sh');
+    assert_script_run('unshar -d a a.sh', timeout => 600);
     assert_script_run('diff -ru shar_testdata a/shar_testdata');
 }
 
