@@ -80,6 +80,8 @@ sub run {
         my @pkg_bins = ref($targets) eq 'ARRAY' ? @$targets : ($targets);
         push @binaries, @pkg_bins;
     }
+    # keep a copy before the splice loop below empties @binaries
+    my @all_binaries = @binaries;
     for (@{$test_data->{helper_packages} // []}) {
         push @packages, $_;
     }
@@ -140,6 +142,23 @@ sub run {
         }
     }
     record_info('shim summary', "$failures of " . scalar(@bin_chunks) . " batches had failures") if $failures;
+
+    # postgres's initdb makes tens of thousands of instrumented function
+    # calls under eBPF tracing, consistently exceeding systemd's default
+    # TimeoutStartSec on slower/shared CI hardware.
+    if (grep { /\/postgres$/ } @all_binaries) {
+        if (script_run('mkdir -p /etc/systemd/system/postgresql.service.d') == 0) {
+            write_sut_file('/etc/systemd/system/postgresql.service.d/coverage_timeout.conf',
+                "[Service]\nTimeoutStartSec=150\n");
+            if (script_run('systemctl daemon-reload') == 0) {
+                record_info('postgres timeout', 'Raised postgresql.service TimeoutStartSec to 150s');
+            } else {
+                record_info('postgres timeout', 'daemon-reload failed', result => 'softfail');
+            }
+        } else {
+            record_info('postgres timeout', 'Failed to create drop-in directory', result => 'softfail');
+        }
+    }
 
     # For shimmed daemons with Type=notify, the shim sits between systemd
     # and the real binary, so sd_notify never reaches systemd and service
