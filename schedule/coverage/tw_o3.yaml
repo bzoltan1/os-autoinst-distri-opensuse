@@ -382,6 +382,9 @@ test_data:
     cups: /usr/sbin/cupsd
     cups-client:
       - /sbin/lpadmin
+      - /usr/bin/cancel
+      - /usr/bin/lp
+      - /usr/bin/lpoptions
       - /usr/bin/lpq
       - /usr/bin/lpstat
     rpcbind: /usr/sbin/rpcbind
@@ -391,6 +394,7 @@ test_data:
       - /usr/sbin/rpc.idmapd
       - /usr/sbin/nfsdcld
       - /usr/sbin/sm-notify
+      - /usr/libexec/nfsrahead
     nfs-kernel-server:
       - /usr/sbin/exportfs
       - /usr/sbin/rpc.mountd
