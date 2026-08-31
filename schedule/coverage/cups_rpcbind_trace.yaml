@@ -1,0 +1,34 @@
+name: execve trace - cups/rpcbind/postgresql binary discovery
+description: >
+    ftrace sched_process_exec tracing to discover all binaries
+    executed during cups, rpcbind, and postgresql_server tests.
+    Compare the output against the confirmed coverage schedule
+    to find untapped binaries.
+    Maintainer: balogh
+schedule:
+    - autoyast/prepare_profile
+    - installation/isosize
+    - installation/bootloader_uefi
+    - autoyast/installation
+    - autoyast/console
+    - autoyast/login
+    - autoyast/autoyast_reboot
+    - installation/grub_test
+    - installation/first_boot
+    - console/system_prepare
+    - coverage/execve_trace_start
+    - console/cups
+    - console/rpcbind
+    - console/postgresql_server
+    - coverage/execve_trace_report
+test_data:
+    helper_packages:
+        - gzip
+        - iputils
+        - systemd
+        - wget
+    coverage_targets:
+        cups: /usr/sbin/cupsd
+        rpcbind: /usr/sbin/rpcbind
+        postgresql18-server: /usr/lib/postgresql18/bin/postgres
+        openssh-server: /usr/sbin/sshd
