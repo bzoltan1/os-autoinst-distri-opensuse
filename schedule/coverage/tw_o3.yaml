@@ -138,6 +138,10 @@ schedule:
   # --- verified August 25, 2026 (daemon shimming fix: BinaryCoverage#148) ---
   - console/sshd
   - console/tcpdump
+  # --- verified August 31, 2026 (ftrace discovery o3 #6194032, coverage o3 #6194777) ---
+  - console/cups
+  - console/rpcbind
+  - console/postgresql_server
   # --- verified August 28, 2026 (sshd unblocks git/rsync) ---
   - console/git
   - console/rsync
@@ -189,6 +193,7 @@ test_data:
       - /usr/bin/gpgconf              # job 147
       - /usr/bin/gpg-agent
       - /usr/bin/gpgsm
+      - /usr/libexec/scdaemon
     postfix:
       - /usr/sbin/postfix
       - /usr/sbin/postconf
@@ -373,6 +378,28 @@ test_data:
     # --- verified August 28, 2026 (o3 #6188706, #6188707) ---
     git-core: /usr/bin/git
     rsync: /usr/bin/rsync
+    # --- verified August 31, 2026 (ftrace discovery o3 #6194032, coverage o3 #6194777) ---
+    cups: /usr/sbin/cupsd
+    cups-client:
+      - /sbin/lpadmin
+      - /usr/bin/lpq
+      - /usr/bin/lpstat
+    rpcbind: /usr/sbin/rpcbind
+    nfs-client:
+      - /sbin/mount.nfs
+      - /usr/sbin/rpc.statd
+      - /usr/sbin/rpc.idmapd
+      - /usr/sbin/nfsdcld
+      - /usr/sbin/sm-notify
+    nfs-kernel-server:
+      - /usr/sbin/exportfs
+      - /usr/sbin/rpc.mountd
+      - /usr/sbin/rpc.nfsd
+      - /usr/sbin/nfsdctl
+    postgresql18-server:
+      - /usr/lib/postgresql18/bin/postgres
+      - /usr/lib/postgresql18/bin/initdb
+      - /usr/lib/postgresql18/bin/pg_ctl
     # --- verified August 29, 2026 (execve trace discovery, job #226) ---
     # new packages
     jq: /usr/bin/jq
