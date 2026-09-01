@@ -1,0 +1,33 @@
+name: coverage - snapper test_flags verification
+description: >
+    Verifies that snapper module failures do not abort
+    subsequent modules.
+    Maintainer: balogh
+schedule:
+    - autoyast/prepare_profile
+    - installation/isosize
+    - installation/bootloader_uefi
+    - autoyast/installation
+    - autoyast/console
+    - autoyast/login
+    - autoyast/autoyast_reboot
+    - installation/grub_test
+    - installation/first_boot
+    - console/system_prepare
+    - coverage/coverage_setup
+    - console/snapper_create
+    - console/snapper_cleanup
+    - console/snapper_used_space
+    - console/irqbalance
+    - console/man_pages
+    - coverage/coverage_report
+test_data:
+    helper_packages:
+        - gzip
+        - iputils
+        - systemd
+        - wget
+    coverage_targets:
+        snapper:
+            - /usr/bin/snapper
+            - /usr/sbin/snapperd
