@@ -1,0 +1,8 @@
+name: sudo_verification
+description: >
+  Run the openqa-agnostic sudo functional tests.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/consoletest_setup
+  - console/oqa_agnostic/sudo_agnostic

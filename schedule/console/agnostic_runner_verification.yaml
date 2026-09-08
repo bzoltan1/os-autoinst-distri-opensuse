@@ -1,0 +1,18 @@
+name: agnostic_runner_verification
+description: >
+  Run all openqa-agnostic tests (console and security) to verify
+  the agnosticTestRunner result handling.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/consoletest_setup
+  - console/oqa_agnostic/sudo_agnostic
+  - console/oqa_agnostic/libsoup
+  - console/oqa_agnostic/evolution_data_server
+  - console/oqa_agnostic/glib_networking
+  - security/oqa_agnostic/openssl_pqc
+  - security/oqa_agnostic/apachessl_pqc
+  - security/oqa_agnostic/oqs_provider_openssl
+  - security/oqa_agnostic/polkit_rules
+  - security/oqa_agnostic/yama
+  - security/oqa_agnostic/fips_java_crypto
