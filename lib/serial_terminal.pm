@@ -198,6 +198,7 @@ sub login {
 
         if (length $testapi::password) {
             die 'Failed to wait for password prompt' unless wait_serial(qr/Password:\s*$/i, timeout => 30);
+            type_string 'x' if $attempt == 1;    # TEMP: force the first login attempt to fail
             type_password;
             send_key 'ret';
         }
