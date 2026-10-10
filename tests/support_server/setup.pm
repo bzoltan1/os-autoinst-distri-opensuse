@@ -459,24 +459,26 @@ sub setup_iscsi_lio_server {
     }
     assert_script_run($parted_cmd);
 
-    # Build a single shell command chaining all targetcli invocations
-    # instead of 11+ individual assert_script_run calls. Each targetcli
-    # call runs in non-interactive mode (single command argument), so no
-    # stdin or multi-line issues. Joined with && for fail-fast.
+    # Build the targetcli commands as an uploaded script and run it with a
+    # short command. An assert_script_run command is typed character by
+    # character, so the ~800-char chain spent ~30s typing and ~5s running;
+    # upload it and run `bash /tmp/x.sh` instead. Each targetcli call runs in
+    # non-interactive (single-command) mode; set -e keeps the script fail-fast.
     my $bs_block = is_os_release('12') ? 'iblock' : 'block';
-    my @tcli_cmds;
-    push @tcli_cmds, 'targetcli "set global auto_add_default_portal=false"';
-    push @tcli_cmds, "targetcli '/iscsi create $iscsi_iqn:$iscsi_identifier'";
+    my $setup_script = qq{targetcli "set global auto_add_default_portal=false"\n};
+    $setup_script .= qq{targetcli '/iscsi create $iscsi_iqn:$iscsi_identifier'\n};
     for (my $num_lun = 1; $num_lun <= $num_luns; $num_lun++) {
         my $device = "$hdd_lun$num_lun";
         (my $name_lun = $device) =~ tr/\//_/;
         $name_lun =~ s/^_//;
-        push @tcli_cmds, "targetcli '/backstores/$bs_block create name=$name_lun dev=$device'";
-        push @tcli_cmds, "targetcli '/iscsi/$iscsi_iqn:$iscsi_identifier/tpg1/luns create storage_object=/backstores/$bs_block/$name_lun'";
+        $setup_script .= qq{targetcli '/backstores/$bs_block create name=$name_lun dev=$device'\n};
+        $setup_script .= qq{targetcli '/iscsi/$iscsi_iqn:$iscsi_identifier/tpg1/luns create storage_object=/backstores/$bs_block/$name_lun'\n};
     }
-    push @tcli_cmds, "targetcli '/iscsi/$iscsi_iqn:$iscsi_identifier/tpg1/portals create $iscsi_ip ip_port=$iscsi_port'";
-    push @tcli_cmds, "targetcli '/iscsi/$iscsi_iqn:$iscsi_identifier/tpg1 set attribute demo_mode_write_protect=0 cache_dynamic_acls=1 generate_node_acls=1 authentication=0'";
-    assert_script_run(join(' && ', @tcli_cmds), timeout => 120);
+    $setup_script .= qq{targetcli '/iscsi/$iscsi_iqn:$iscsi_identifier/tpg1/portals create $iscsi_ip ip_port=$iscsi_port'\n};
+    $setup_script .= qq{targetcli '/iscsi/$iscsi_iqn:$iscsi_identifier/tpg1 set attribute demo_mode_write_protect=0 cache_dynamic_acls=1 generate_node_acls=1 authentication=0'\n};
+    bmwqemu::log_call(setup_script => $setup_script);
+    write_sut_file('/tmp/iscsi_lio_setup.sh', "set -ex\n$setup_script");
+    assert_script_run('bash /tmp/iscsi_lio_setup.sh', timeout => 120);
 
     # Fail fast: targetcli/rtslib can report success while creating nothing
     # (its restore path is non-fatal, and targetcli still exits 0), so assert
