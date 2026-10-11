@@ -10,9 +10,10 @@
 use Mojo::Base 'consoletest';
 use testapi;
 use utils;
+use serial_terminal 'select_serial_terminal';
 
 sub run {
-    select_console 'root-console';
+    select_serial_terminal;
 
     # System roles are defined in config.xml. Currently the role 'kvm host'
     # defines kvm_server as an additional pattern, xen_server defines 'xen host'.
