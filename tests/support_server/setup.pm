@@ -59,8 +59,14 @@ my $nfs_server_set = 0;
 
 my $disable_firewall = 0;
 
-# check_os_release() is cached in version_utils; this is just a short alias.
-sub is_os_release { check_os_release($_[0], 'VERSION_ID') }
+# check_os_release() does a console round-trip and the support server's
+# release does not change during setup, so cache it here. Deliberately not
+# cached in version_utils: there the release can change across a migration run.
+my %os_release_cache;
+sub is_os_release {
+    my ($version) = @_;
+    return $os_release_cache{$version} //= check_os_release($version, 'VERSION_ID');
+}
 
 # The firewall state does not change during setup, so probe it once.
 my $firewall_active;
