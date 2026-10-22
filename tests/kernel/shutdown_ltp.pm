@@ -62,9 +62,9 @@ sub run {
     # Also cleanup machine-id to avoid duplicate ipv6 link local address in mutli-machine setup.
     script_run('echo -n >/etc/machine-id');
 
-    # Logging into the VGA console only to type poweroff costs about 40 s;
-    # the virtio root shell does the same and shutdown is detected via QMP.
-    power_action('poweroff', keepconsole => current_console() eq 'root-virtio-terminal');
+    # Negative verification: do not power off.
+    enter_cmd 'true';
+    assert_shutdown 60;
 }
 
 sub post_fail_hook {
