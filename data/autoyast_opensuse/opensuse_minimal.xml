@@ -15,9 +15,14 @@
     <keep_install_network config:type="boolean">true</keep_install_network>
   </networking>
   <software>
+    <install_recommended config:type="boolean">true</install_recommended>
     <packages config:type="list">
       <package>zypper</package>
+      <package>kernel-default</package>
     </packages>
+    <patterns config:type="list">
+      <pattern>base</pattern>
+    </patterns>
   </software>
   <users config:type="list">
     <user>
