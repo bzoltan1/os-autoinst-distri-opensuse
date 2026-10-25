@@ -8,9 +8,7 @@
   </general>
   <bootloader>
     <global>
-      <secure_boot config:type="boolean">true</secure_boot>
       <timeout config:type="integer">30</timeout>
-      <update_nvram config:type="boolean">true</update_nvram>
     </global>
     <loader_type>grub2-efi</loader_type>
   </bootloader>
