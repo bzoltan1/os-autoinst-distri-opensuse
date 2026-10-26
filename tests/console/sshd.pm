@@ -31,12 +31,12 @@ use ssh_crypto_policy;
 
 # The test disables the firewall, if true reenable afterwards.
 my $reenable_firewall = 0;
+my $ssh_testman = "sshboy";
 
 sub run {
     my $self = shift;
     select_serial_terminal;
 
-    my $ssh_testman = "sshboy";
     services::sshd::prepare_test_data();
     # Stop the firewall if it's available
     if (is_upgrade && check_var('ORIGIN_SYSTEM_VERSION', '11-SP4')) {
@@ -122,17 +122,30 @@ sub post_run_hook {
 sub post_fail_hook {
     my $self = shift;
 
-    # If the test fails inside the subshell, many commands can fail
+    # If the test fails in interactive mode (via script_start_io), we need to make sure to close it here
     if (get_var('SUBSHELL_NOT_AS_ROOT', 0)) {
         script_run "ps -aux";
         script_run "env";
         enter_cmd('exit');
-        # For some reason the serial guard seems to fail
-        $testapi::distri->pretty_serial_marker_guard(1);
+        script_finish_io(timeout => 300, exitcodes => [0]);
     }
 
+    # Only coverage runs continue after a failure, so only they need it.
+    restore_ssh_state() if get_var('BINARY_COVERAGE');
     $self->cleanup();
     $self->SUPER::post_fail_hook;
+}
+
+# Same restore as services::sshd::do_ssh_cleanup, but without asserting:
+# the failure may have happened before any of these changes were made.
+sub restore_ssh_state {
+    eval {
+        script_run('if [ -d ~/.ssh_bck ]; then rm -rf ~/.ssh && mv ~/.ssh_bck ~/.ssh; fi');
+        script_run('if [ -f /etc/ssh/sshd_config_before ]; then cp /etc/ssh/sshd_config{_before,}; fi');
+        script_run("killall -u $ssh_testman");
+        systemctl('restart sshd', ignore_failure => 1);
+    };
+    record_info('sshd restore', "restoring ssh state failed: $@", result => 'fail') if $@;
 }
 
 sub cleanup() {
@@ -149,7 +162,10 @@ sub cleanup() {
 }
 
 sub test_flags {
-    return is_public_cloud() ? {milestone => 0, no_rollback => 1} : {fatal => 0, no_rollback => 1};
+    return {milestone => 0, no_rollback => 1} if is_public_cloud();
+    # Keep the instrumented system and its coverage data instead of aborting.
+    return {fatal => 0, no_rollback => 1} if get_var('BINARY_COVERAGE');
+    return {milestone => 1, fatal => 1};
 }
 
 1;
