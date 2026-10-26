@@ -23,6 +23,9 @@
 # (any fork/branch works, e.g. a URL with a #branch suffix), not just a branch name.
 # Upstream reference: https://github.com/ilmanzo/BinaryCoverage
 # Example: BINARY_COVERAGE_GITREF=https://github.com/ilmanzo/BinaryCoverage#main
+#
+# Sets BINARY_COVERAGE=1 once the binaries are instrumented, so later modules
+# can tell a coverage run from a regular one.
 
 use Mojo::Base 'opensusebasetest';
 use testapi;
@@ -172,6 +175,7 @@ sub run {
         assert_script_run 'systemctl daemon-reload';
         record_info('notify override', join(', ', @{$test_data->{notify_override}}));
     }
+    set_var('BINARY_COVERAGE', 1);
 }
 
 sub test_flags {
