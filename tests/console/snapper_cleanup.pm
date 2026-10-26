@@ -43,7 +43,7 @@ sub snapper_cleanup {
     my $snap_create = "snapper create --cleanup number --command '$fill_space'";
     assert_script_run "btrfs filesystem show --mbytes /";
 
-    for (1 .. $scratch_size_gb) { assert_script_run("$snap_create", 500); }
+    for (1 .. $scratch_size_gb) { assert_script_run("$snap_create", 1); }
     assert_script_run('sync');
     script_run "echo There are `$snaps_numb` snapshots BEFORE cleanup";
     # cleanup created snapshots
