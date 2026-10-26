@@ -23,6 +23,7 @@ sub run {
     assert_script_run("rm -rf $lynis_audit_system_current_file");
     assert_script_run("rm -rf $lynis_audit_system_error_file");
     assert_script_run("lynis audit system --nocolors > $lynis_audit_system_current_file 2> $lynis_audit_system_error_file", timeout => 900);
+    assert_script_run(q{sed -i "/- sshd.service:/{p;s/sshd.service/injected.service/}" } . $lynis_audit_system_current_file);
 
     # Upload the outputs for reference: e.g.,
     # file "$lynis_audit_system_current_file" can be used to be a new baseline
