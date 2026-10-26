@@ -145,6 +145,8 @@ sub run {
 
     for (1 .. $n) { snapper_cleanup($n_scratch_prepost, $scratchfile_mb); }
 
+    die "negative test: forced failure before tidy up";
+
     # tidy up and restore default settings
     assert_script_run("snapper set-config NUMBER_LIMIT=0; snapper cleanup number; rm -fv data", 300);
     assert_script_run("snapper set-config $self->{config_restore}");
