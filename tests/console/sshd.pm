@@ -57,6 +57,7 @@ sub run {
     assert_script_run "echo 'sshd.pm: Testing cryptographic policies' | logger";
     test_cryptographic_policies(remote_user => $services::sshd::ssh_testman);
 
+    die 'forced sshd failure for PR 27137 verification' if get_var('VERIFY_FORCE_SSHD_FAIL');
     # do the sshd test cleanup
     services::sshd::do_ssh_cleanup();
 }
@@ -155,6 +156,7 @@ sub cleanup() {
 }
 
 sub test_flags {
+    return {fatal => 1} if get_var('VERIFY_FORCE_FATAL');
     return {milestone => 0, no_rollback => 1} if is_public_cloud();
     # Keep the instrumented system and its coverage data instead of aborting.
     return {fatal => 0, no_rollback => 1} if get_var('BINARY_COVERAGE');

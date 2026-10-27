@@ -1,0 +1,30 @@
+name: PR 27137 negative verification (throwaway, not for merge)
+description: >
+    Forced sshd failure in a coverage run. VERIFY_FORCE_SSHD_FAIL makes
+    sshd die after it changed ~/.ssh and sshd_config; VERIFY_FORCE_FATAL
+    additionally makes that failure fatal.
+vars:
+  BOOT_HDD_IMAGE: 1
+  BINARY_COVERAGE: 1
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/sshd
+  - console/git
+  - console/rsync
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - wget
+  coverage_targets:
+    openssh-server: /usr/sbin/sshd
+    openssh-clients:
+      - /usr/bin/ssh
+      - /usr/bin/ssh-keygen
+      - /usr/bin/ssh-keyscan
+      - /usr/bin/scp
+    git-core: /usr/bin/git
+    rsync: /usr/bin/rsync
