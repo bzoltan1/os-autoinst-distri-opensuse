@@ -11,10 +11,56 @@ use Mojo::Base 'opensusebasetest';
 use testapi;
 use utils;
 use LTP::utils;
-use power_action_utils 'power_action';
+use power_action_utils 'prepare_system_shutdown';
 use upload_system_log;
 use kernel;
 use qam;
+use Time::HiRes ();
+
+# VR for os-autoinst#3131 only; never to be merged.
+sub x3270_screen {
+    my $console = console('x3270');
+    $console->send_3270('Snap');
+    return @{$console->send_3270('Snap(Ascii)')->{command_output}};
+}
+
+sub vr_pr3131_poweroff {
+    die 'VR pr3131: is_shutdown reported a running guest as shut down' if check_shutdown(30);
+    record_info('VR negative', 'check_shutdown(30) returned false while the guest was running');
+
+    prepare_system_shutdown;
+    select_console 'root-console' unless current_console() eq 'root-virtio-terminal';
+    enter_cmd 'poweroff';
+    my $start = Time::HiRes::time();
+    my (@timeline, %seen, $last_status, $stopped_at);
+    while ((my $elapsed = Time::HiRes::time() - $start) < 600) {
+        my @screen = x3270_screen();
+        my $status = $screen[-1] // '';
+        if (!defined $last_status || $status ne $last_status) {
+            push @timeline, sprintf('%6.1f STATUS %s', $elapsed, $status);
+            push @timeline, map { "         | $_" } @screen;
+            $last_status = $status;
+        }
+        for my $line (@screen[0 .. $#screen - 2]) {
+            next unless $line =~ /Power down|HCPGSP|reboot:|Kernel panic|systemd-shutdown|Reached target|MORE|HOLDING/;
+            push @timeline, sprintf('%6.1f LINE   %s', $elapsed, $line) unless $seen{$line}++;
+        }
+        if ($status =~ /CP READ/) {
+            $stopped_at = $elapsed;
+            last;
+        }
+        Time::HiRes::sleep(5);
+    }
+    mkdir 'ulogs' unless -d 'ulogs';
+    open(my $fh, '>', 'ulogs/pr3131-x3270-timeline.txt') or die "cannot write timeline: $!";
+    print $fh join("\n", @timeline), "\n";
+    close $fh;
+    record_info('VR timeline', join("\n", grep { !/^\s+\|/ } @timeline));
+    die 'VR pr3131: no CP READ within 600 s after poweroff' unless defined $stopped_at;
+    my $t0 = Time::HiRes::time();
+    die 'VR pr3131: is_shutdown false although the status line shows CP READ' unless check_shutdown(5);
+    record_info('VR positive', sprintf('CP READ after %.1f s, check_shutdown true after %.1f s', $stopped_at, Time::HiRes::time() - $t0));
+}
 
 sub export_to_json {
     my ($test_result_export) = @_;
@@ -62,8 +108,7 @@ sub run {
     # Also cleanup machine-id to avoid duplicate ipv6 link local address in mutli-machine setup.
     script_run('echo -n >/etc/machine-id');
 
-    # Avoid a VGA login only to type poweroff; shutdown is detected via QMP.
-    power_action('poweroff', textmode => 1, keepconsole => (current_console() eq 'root-virtio-terminal'));
+    vr_pr3131_poweroff;
 }
 
 sub post_fail_hook {
