@@ -24,6 +24,8 @@ use Utils::Backends;
 use version_utils qw(is_sle is_leap is_opensuse is_tumbleweed is_vmware is_jeos);
 use Carp 'croak';
 
+our $zvm_shutdown_start;
+
 our @EXPORT = qw(
   prepare_system_shutdown
   reboot_x11
@@ -290,6 +292,10 @@ sub power_action {
         select_console $args{textmode} ? 'root-console' : 'x11';
     }
 
+    if (is_backend_s390x && $action eq 'poweroff') {
+        eval { console('x3270')->expect_3270(clear_buffer => 1, buffer_ready => qr/./, timeout => 0) };
+    }
+
     unless ($args{observe}) {
         if ($args{textmode}) {
             $args{force} ? enter_cmd "$action -f" : enter_cmd "$action";
@@ -316,6 +322,8 @@ sub power_action {
         }
     }
 
+    $zvm_shutdown_start = time if is_backend_s390x && $action eq 'poweroff';
+
     my $soft_fail_data;
     my $shutdown_timeout = 60;
 
@@ -338,7 +346,7 @@ sub power_action {
     }
 
     # Sometimes QEMU CD-ROM pop-up is displayed on shutdown, see bsc#1137230
-    if (is_opensuse && check_screen 'qemu-cd-rom-authentication-required') {
+    if (is_opensuse && !is_backend_s390x && check_screen 'qemu-cd-rom-authentication-required') {
         $soft_fail_data = {bugref => 'bsc#1137230', soft_timeout => 60, timeout => $shutdown_timeout *= 5};
     }
 
@@ -448,9 +456,22 @@ Example:
 
 sub assert_shutdown_with_soft_timeout {
     my ($args) = @_;
-    # check_shutdown can only sleep when the backend cannot detect shutdown
+    # Timing probe: backend::s390x has no is_shutdown, so measure how long the
+    # guest takes to reach CP mode on the x3270 console, then return.
     if (is_backend_s390x) {
-        diag('Skipping shutdown check on the z/VM backend which cannot detect shutdown');
+        my $start = $zvm_shutdown_start // time;
+        $zvm_shutdown_start = undef;
+        eval { select_console('x3270', await_console => 0) };
+        my $reached_cp = eval {
+            console('x3270')->expect_3270(output_delim => qr/HCPGSP2629I|placed in CP mode/, timeout => 300);
+            1;
+        };
+        my $error = $@;
+        my $elapsed = time - $start;
+        my $message = $reached_cp ? "z/VM guest reached CP mode after ${elapsed}s" : "z/VM guest did not reach CP mode within 300s";
+        diag($message);
+        diag("expect_3270 error: $error") if $error;
+        record_info('z/VM shutdown timing', $message, result => $reached_cp ? 'ok' : 'softfail');
         return;
     }
     $args->{timeout} //= (is_s390x || is_ipmi) ? 600 : get_var('DEBUG_SHUTDOWN') ? 180 : 60;
