@@ -171,6 +171,15 @@ sub run {
             record_info('postgres timeout', 'Failed to raise postgresql.service TimeoutStartSec', result => 'softfail');
         }
     }
+
+    if (grep { m{/snapper$} } @all_binaries) {
+        # The minimal coverage image has snapper installed but no config, no
+        # quota and no running snapperd; the snapper tests need all three.
+        script_run('systemctl start snapperd');
+        script_run('snapper get-config >/dev/null 2>&1 || snapper create-config /');
+        script_run('snapper get-config 2>/dev/null | grep -q QGROUP || snapper setup-quota', timeout => 300);
+        record_info('snapper setup', 'snapper config and quota prepared');
+    }
     # coverage_report runs even after a fatal failure; tell it there is data.
     set_var('COVERAGE_SETUP_DONE', 1);
 }
