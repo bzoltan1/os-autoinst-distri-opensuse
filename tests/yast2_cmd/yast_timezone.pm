@@ -20,7 +20,7 @@ use utils;
 
 sub run {
     select_serial_terminal;
-    zypper_call "in yast2-country";
+    zypper_call "in yast2-country", timeout => 1200;
     my $timezone = script_output 'yast timezone summary 2>&1 | grep "Current Time Zone" | cut -d: -f2';
     record_info 'default timezone', $timezone;
     validate_script_output 'yast timezone list 2>&1', sub { m#Africa/Cairo# };

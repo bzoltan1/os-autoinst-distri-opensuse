@@ -15,7 +15,7 @@ use utils;
 
 sub run {
     select_serial_terminal;
-    zypper_call "in yast2-country";
+    zypper_call "in yast2-country", timeout => 1200;
     validate_script_output 'yast language list', sub { m/(.*)de_DE(.*)it_IT(.*)/s };
     assert_script_run('yast language set lang=de_DE languages=it_IT', timeout => 300);
     validate_script_output 'yast language summary', sub { m/(.*)de_DE(.*)it_IT(.*)/s };
