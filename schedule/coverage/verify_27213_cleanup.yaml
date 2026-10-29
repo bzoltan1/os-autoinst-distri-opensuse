@@ -1,0 +1,14 @@
+name: verify-27213-cleanup
+description: >
+  Negative verification for PR 27213: zbar leaves a foreground process on
+  the serial console, and the base post_fail_hook must clean it up so the
+  next module can install packages.
+vars:
+  BINARY_COVERAGE: 1
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - console/zbar
+  - console/dnsmasq
