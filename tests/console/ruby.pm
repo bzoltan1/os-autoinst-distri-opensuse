@@ -14,10 +14,12 @@ use package_utils 'install_package';
 
 sub run {
     select_serial_terminal;
-    my $ruby = script_output("zypper se -s ruby | awk -F '|' '{ print \$2 }' | grep -o '\\bruby[0-9]\\+\\(\\.[0-9]\\+\\)\\?\\b' | uniq | sort -V", timeout => 300);
+    # Instrumented binaries are much slower during coverage runs
+    my $timeout = get_var('BINARY_COVERAGE') ? 300 : undef;
+    my $ruby = script_output("zypper se -s ruby | awk -F '|' '{ print \$2 }' | grep -o '\\bruby[0-9]\\+\\(\\.[0-9]\\+\\)\\?\\b' | uniq | sort -V", timeout => $timeout);
     record_info("ruby version in system", $ruby);
     if (!defined $ruby || $ruby eq "") {
-        die "Could find out the ruby package" . script_output('zypper se ruby');
+        die "Could find out the ruby package" . script_output('zypper se ruby', timeout => $timeout);
     }
     # Prepare test file
     my $test_string = "Hello, World";
@@ -31,7 +33,7 @@ sub run {
         install_package("$r", trup_reboot => 1);
 
         # Find our ruby command
-        my $ruby_shell = script_output("ruby-find-versioned | grep $r");
+        my $ruby_shell = script_output("ruby-find-versioned | grep $r", timeout => $timeout);
         record_info("$ruby_shell");
 
         validate_script_output "$ruby_shell $test_script", sub { m/$test_string/ };
