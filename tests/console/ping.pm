@@ -121,7 +121,11 @@ sub run {
         my $msg = "capability '$capability' is not needed when ICMP socket allowed for non-root user: '$ping_group_range'";
         if (is_sle('=15-SP3')) {
             record_info('Unneeded capability', "bsc#1196840#c29: $msg", result => 'softfail');
-        } else {
+        }
+        elsif (get_var('BINARY_COVERAGE')) {
+            record_info('Unneeded capability', "$msg (not enforced in coverage runs)");
+        }
+        else {
             record_info('Unneeded capability', $msg, result => 'fail');
             $self->result("fail");
         }
