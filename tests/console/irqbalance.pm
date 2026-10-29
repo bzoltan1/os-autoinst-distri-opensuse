@@ -11,6 +11,7 @@ use Mojo::Base 'consoletest';
 use testapi qw(is_serial_terminal :DEFAULT);
 use serial_terminal 'select_serial_terminal';
 use utils qw(systemctl zypper_call clear_console);
+use Utils::Backends 'is_qemu';
 
 sub run {
     select_serial_terminal;
@@ -31,7 +32,13 @@ sub run {
     # Test that local timer interrupts are distributed over CPUs
     my @locs = split(' ', script_output("grep 'LOC' /proc/interrupts | sed -E -e 's/[[:blank:]]+/ /g' | cut -d' ' -f 2-\$((${nproc}+1))"));
     for (my $i = 0; $i < $nproc; $i++) {
-        die("The value of local timer interrupts for CPU" . ($i + 1) . " is 0") unless ($locs[$i] > 0);
+        next if ($locs[$i] > 0);
+        # QEMU may keep local timer interrupts on CPU0
+        if (is_qemu) {
+            record_info('SKIP', "CPU" . ($i + 1) . " has no local timer interrupts on QEMU");
+            last;
+        }
+        die("The value of local timer interrupts for CPU" . ($i + 1) . " is 0");
     }
 
     systemctl('stop irqbalance.service');
