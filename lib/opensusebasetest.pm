@@ -1048,6 +1048,32 @@ sub _pick_console_for_logs {
     die("Could not switch to any console for log collection, manual investigation might be needed: $@");
 }
 
+sub _cleanup_coverage_leftovers {
+    my ($self) = @_;
+    return unless get_var('BINARY_COVERAGE');
+
+    # A failed module may have left a package manager running in the
+    # foreground. Interrupt the current console, then clean up from
+    # log-console instead of typing into the stuck process.
+    eval { type_string("\cc") if is_serial_terminal(); };
+    eval { select_log_console };
+    if ($@) {
+        record_info('coverage cleanup', "no log-console: $@", result => 'fail');
+        return;
+    }
+    for my $cmd ('pkill -TERM -x zypper', 'pkill -TERM -x packagekitd') {
+        eval { script_run($cmd, timeout => 60) };
+        record_info('coverage cleanup', "$cmd: $@", result => 'fail') if $@;
+    }
+    eval { script_run('timeout 30 sh -c "while pgrep -x zypper >/dev/null; do sleep 1; done"', timeout => 60) };
+    for my $cmd ('pkill -KILL -x zypper', 'pkill -KILL -x packagekitd') {
+        eval { script_run($cmd, timeout => 60) };
+        record_info('coverage cleanup', "$cmd: $@", result => 'fail') if $@;
+    }
+    eval { quit_packagekit };
+    record_info('coverage cleanup', "quit_packagekit: $@", result => 'fail') if $@;
+}
+
 =head2 post_fail_hook
 
  post_fail_hook();
@@ -1062,6 +1088,8 @@ base method using C<$self-E<gt>SUPER::post_fail_hook;> at the end.
 
 sub post_fail_hook {
     my ($self) = @_;
+
+    $self->_cleanup_coverage_leftovers;
 
     return if (get_var('NOLOGS'));
 
@@ -1110,7 +1138,10 @@ sub post_fail_hook {
 
 sub test_flags {
     # no_rollback is needed for ssh-tunnel and fatal must be explicitly defined
-    return is_public_cloud() ? {no_rollback => 1, fatal => 0} : {};
+    # A coverage run must not roll back: that would delete the coverage data
+    # collected since the last milestone.
+    return {no_rollback => 1, fatal => 0} if is_public_cloud() || get_var('BINARY_COVERAGE');
+    return {};
 }
 
 1;

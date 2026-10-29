@@ -73,6 +73,8 @@ sub run {
 }
 
 sub test_flags {
-    return {fatal => 0};
+    my ($self) = @_;
+    my $flags = $self->SUPER::test_flags();
+    return %$flags ? $flags : {fatal => 0};
 }
 1;
