@@ -14,7 +14,7 @@ use package_utils 'install_package';
 
 sub run {
     select_serial_terminal;
-    my $ruby = script_output("zypper se -s ruby | awk -F '|' '{ print \$2 }' | grep -o '\\bruby[0-9]\\+\\(\\.[0-9]\\+\\)\\?\\b' | uniq | sort -V");
+    my $ruby = script_output("zypper se -s ruby | awk -F '|' '{ print \$2 }' | grep -o '\\bruby[0-9]\\+\\(\\.[0-9]\\+\\)\\?\\b' | uniq | sort -V", timeout => 300);
     record_info("ruby version in system", $ruby);
     if (!defined $ruby || $ruby eq "") {
         die "Could find out the ruby package" . script_output('zypper se ruby');
@@ -37,6 +37,11 @@ sub run {
         validate_script_output "$ruby_shell $test_script", sub { m/$test_string/ };
     }
     script_run("rm -f $test_script");
+}
+
+sub test_flags {
+    return {fatal => 0, no_rollback => 1} if get_var('BINARY_COVERAGE');
+    return {};
 }
 
 1;

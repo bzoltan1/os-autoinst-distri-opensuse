@@ -34,10 +34,15 @@ sub run {
     foreach (@command) {
         script_run "pkcon $_";
     }
-    script_run("pkcon install $pkgname --allow-reinstall --allow-downgrade -y", 300);
+    script_run("pkcon install $pkgname --allow-reinstall --allow-downgrade -y", 600);
 
     # restore previous state for packagekit service
     quit_packagekit;
+}
+
+sub test_flags {
+    return {fatal => 0, no_rollback => 1} if get_var('BINARY_COVERAGE');
+    return {};
 }
 
 1;

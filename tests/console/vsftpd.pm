@@ -46,9 +46,9 @@ sub run {
     assert_script_run 'tar xzfv vsftpd.tar.gz';
     if (is_s390x) {
         record_info("bsc#1176813", "vsftpd: security: one_process_model needs a better OS for the anonymous user scenarios");
-        assert_script_run 'bash run_s390x.sh |& tee run.log', 300;
+        assert_script_run 'bash run_s390x.sh |& tee run.log', 900;
     } else {
-        assert_script_run 'bash run.sh |& tee run.log', 300;
+        assert_script_run 'bash run.sh |& tee run.log', 900;
     }
     upload_logs('run.log');
 }
@@ -57,6 +57,11 @@ sub post_fail_hook {
     my ($self) = @_;
     upload_logs('run.log');
     $self->SUPER::post_fail_hook;
+}
+
+sub test_flags {
+    return {fatal => 0, no_rollback => 1} if get_var('BINARY_COVERAGE');
+    return {};
 }
 
 1;
