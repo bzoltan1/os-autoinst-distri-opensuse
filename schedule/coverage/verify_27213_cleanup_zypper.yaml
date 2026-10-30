@@ -1,0 +1,21 @@
+name: verify-27213-cleanup-zypper
+description: >
+  Negative verification for PR 27213: zbar leaves a real foreground zypper
+  holding the zypp lock, and the base post_fail_hook must kill it so the
+  next module can install packages.
+vars:
+  BINARY_COVERAGE: 1
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/zbar
+  - console/dnsmasq
+test_data:
+  coverage_targets:
+    zypper: /usr/bin/zypper
+    wget: /usr/bin/wget
+    zbar: /usr/bin/zbarimg
+    dnsmasq: /usr/sbin/dnsmasq
