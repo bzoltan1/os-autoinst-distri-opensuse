@@ -65,6 +65,10 @@ sub allow_shim_caps_for_snapperd {
 
 sub run {
     select_serial_terminal;
+    # Instrumented snapperd makes zypper pre/post snapshots too slow to clean up
+    # in snapper_cleanup. No solvable matches, so the plugin creates none.
+    write_sut_file('/etc/snapper/zypp-plugin.conf',
+        qq{<?xml version="1.0" encoding="utf-8"?>\n<snapper-zypp-plugin-conf>\n  <solvables/>\n</snapper-zypp-plugin-conf>\n});
     # enable debug repos
     # on Tumbleweed does not have debuginfo in to-be-tested snapshots, except for selected package
 
