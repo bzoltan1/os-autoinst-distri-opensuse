@@ -1,0 +1,12 @@
+name: coverage - verify yast_timezone empty summary fix
+description: >
+    Focused verification that yast2_cmd/yast_timezone restores the
+    timezone on the Agama textmode image, where /etc/localtime is a
+    regular file and "yast timezone summary" reports no timezone.
+vars:
+  TIMEOUT_SCALE: 2
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - yast2_cmd/yast_timezone
