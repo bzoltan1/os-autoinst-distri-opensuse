@@ -22,6 +22,9 @@ sub run {
     select_serial_terminal;
     zypper_call "in yast2-country";
     my $timezone = script_output 'yast timezone summary 2>&1 | grep "Current Time Zone" | cut -d: -f2';
+    # yast only reads /etc/localtime when it is a symlink; fall back to
+    # systemd for images that ship it as a regular file.
+    $timezone = script_output 'timedatectl show -p Timezone --value' unless $timezone;
     record_info 'default timezone', $timezone;
     validate_script_output 'yast timezone list 2>&1', sub { m#Africa/Cairo# };
     assert_script_run('yast timezone set timezone=Africa/Cairo', timeout => 300);
