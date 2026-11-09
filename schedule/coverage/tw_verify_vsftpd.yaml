@@ -1,0 +1,27 @@
+name: tw_verify_vsftpd
+description: >
+    Focused verification for BinaryCoverage issue #167: the funkoverage
+    helper must not be a child of the traced daemon, otherwise an early
+    helper exit makes vsftpd reap an unknown PID and crash on startup.
+    Boots the create_hdd_agama_textmode image; the job group sets the
+    image settings.
+    Maintainer: balogh
+vars:
+    BINARY_COVERAGE: 1
+    TIMEOUT_SCALE: 2
+schedule:
+    - installation/bootloader_start
+    - boot/boot_to_desktop
+    - console/system_prepare
+    - console/consoletest_setup
+    - coverage/coverage_setup
+    - console/vsftpd
+    - coverage/coverage_report
+test_data:
+    helper_packages:
+        - gzip
+        - iputils
+        - systemd
+        - wget
+    coverage_targets:
+        vsftpd: /usr/sbin/vsftpd
