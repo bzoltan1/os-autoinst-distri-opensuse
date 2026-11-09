@@ -1,0 +1,11 @@
+name: coverage - verify wget_https retry
+description: >
+    Focused verification that console/wget_https still passes with the
+    503 retry options on the Agama textmode image.
+vars:
+  TIMEOUT_SCALE: 2
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/wget_https
