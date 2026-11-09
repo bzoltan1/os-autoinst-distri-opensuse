@@ -1,0 +1,31 @@
+name: coverage - verify ssh-keyscan timeout fix
+description: >
+    Focused verification for the 20s ssh-keyscan timeout in console/sshd,
+    console/git and console/rsync under funkoverage instrumentation.
+    The instrumented binaries make the SUT slow enough that the default
+    5s ssh-keyscan timeout can expire.
+vars:
+  BINARY_COVERAGE: 1
+  TIMEOUT_SCALE: 2
+test_data:
+  helper_packages:
+    - systemd
+    - wget
+  coverage_targets:
+    openssh-server: /usr/sbin/sshd
+    openssh-clients:
+      - /usr/bin/ssh
+      - /usr/bin/ssh-keygen
+      - /usr/bin/ssh-keyscan
+      - /usr/bin/scp
+    git-core: /usr/bin/git
+    rsync: /usr/bin/rsync
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/sshd
+  - console/git
+  - console/rsync
