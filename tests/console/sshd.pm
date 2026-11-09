@@ -89,7 +89,7 @@ sub test_cryptographic_policies {
     systemctl("restart sshd");
 
     # Add all the ssh public key hashes as known hosts
-    assert_script_run("ssh-keyscan -H localhost > ~/.ssh/known_hosts");
+    assert_script_run("ssh-keyscan -T 20 -H localhost > ~/.ssh/known_hosts");
 
     # Test all the policies
     foreach my $policy (@policies) {
