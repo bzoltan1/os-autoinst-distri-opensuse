@@ -53,6 +53,7 @@ sub run {
     # Delete all those snapshots we just created so other tests are not confused
     assert_script_run("snapper delete --sync $first_snap_to_delete-" . $self->get_last_snap_number(), timeout => 600);
     assert_script_run("snapper list", timeout => 120);
+    assert_script_run(q{(timeout 60 sh -c 'while :; do :; done' >/dev/null 2>&1 &)});
     # Wait until no task is running or blocked so the snapshot cleanup
     # does not spill into the next module. Busy tasks are printed.
     my $retries = 300 * get_var('TIMEOUT_SCALE', 1);
