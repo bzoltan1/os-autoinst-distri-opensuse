@@ -1,0 +1,37 @@
+name: coverage - throwaway third candidate round
+description: 'Throwaway o3 schedule for extending coverage: update existing zero targets
+  (lscpu, blkid) and add systemd-nspawn, bpftrace, aulast and aulastlog. Not for merging.
+
+  '
+schedule:
+- installation/bootloader_start
+- boot/boot_to_desktop
+- console/system_prepare
+- console/consoletest_setup
+- coverage/coverage_setup
+- qemu/info
+- console/validate_partition_table_via_blkid
+- console/systemd_nspawn
+- console/sshd
+- security/audit/aulast
+- security/audit/aulastlog
+- coverage/coverage_report
+test_data:
+  helper_packages:
+  - gzip
+  - iputils
+  - systemd
+  - wget
+  disks:
+  - name: vda
+    table_type: gpt
+  coverage_targets:
+    util-linux:
+    - /usr/bin/lscpu
+    - /usr/sbin/blkid
+    systemd-container:
+    - /usr/bin/systemd-nspawn
+    - /usr/bin/machinectl
+    audit:
+    - /usr/bin/aulast
+    - /usr/bin/aulastlog
