@@ -1,0 +1,41 @@
+name: coverage - throwaway second candidate round
+description: >
+    Throwaway o3 schedule for the second candidate round: gdal, 389-ds,
+    rasdaemon, NSS tools, systemtap, and the remaining passive targets
+    (getcap, ss, lftp). Not for merging.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/ping
+  - appgeo/gdal
+  - fips/mozilla_nss/nss_smoke
+  - security/vsftpd/vsftpd_setup
+  - security/vsftpd/vsftpd
+  - security/vsftpd/lftp
+  - hpc/rasdaemon
+  - console/ds389_advanced_functional
+  - console/systemtap
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    libcap-progs: /usr/bin/getcap
+    gdal: /usr/bin/gdalinfo
+    mozilla-nss-tools:
+      - /usr/bin/certutil
+      - /usr/bin/modutil
+    iproute2: /usr/sbin/ss
+    lftp: /usr/bin/lftp
+    rasdaemon:
+      - /usr/sbin/ras-mc-ctl
+      - /usr/sbin/rasdaemon
+    389-ds: /usr/sbin/ns-slapd
+    systemtap: /usr/bin/stap
+    systemtap-server: /usr/bin/stap-server
