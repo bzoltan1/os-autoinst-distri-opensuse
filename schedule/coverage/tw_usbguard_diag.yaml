@@ -1,0 +1,25 @@
+name: coverage - usbguard shim diagnostic
+description: >
+    Throwaway o3 diagnostic. Runs the stock usbguard module after console/shells
+    with usbguard binaries instrumented, to separate shim effects from console
+    setup and module ordering.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/shells
+  - security/usbguard/usbguard
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    usbguard-tools: /usr/bin/usbguard
+    usbguard:
+      - /usr/sbin/usbguard-daemon
+      - /usr/sbin/usbguard-dbus
