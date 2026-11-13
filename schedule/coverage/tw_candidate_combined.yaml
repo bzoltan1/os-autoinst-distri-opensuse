@@ -1,0 +1,56 @@
+name: coverage - throwaway combined candidate check
+description: >
+    Throwaway o3 schedule combining the verified candidate targets and test
+    modules. Not for merging. Boots the prebuilt Tumbleweed textmode HDD image
+    and instruments only the candidate packages.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/run0
+  - console/update_alternatives
+  - console/cryptsetup
+  - security/audit/auditctl
+  - console/rpcbind
+  - console/systemd_resolved
+  - console/unzip
+  - security/selinux/chcon
+  - console/wavpack
+  - console/libgpiod
+  - fips/openssl/dirmngr_setup
+  - fips/openssl/dirmngr_daemon
+  - console/traceroute
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    systemd:
+      - /usr/bin/run0
+    util-linux:
+      - /usr/bin/script
+    update-alternatives: /usr/sbin/update-alternatives
+    cryptsetup: /usr/sbin/cryptsetup
+    e2fsprogs: /usr/sbin/mkfs.ext4
+    audit-rules: /usr/sbin/auditctl
+    rpcbind:
+      - /usr/sbin/rpcbind
+      - /usr/bin/rpcinfo
+    systemd-resolved: /usr/bin/resolvectl
+    coreutils:
+      - /usr/bin/chcon
+      - /usr/bin/md5sum
+    alsa-utils: /usr/bin/aplay
+    procps: /usr/bin/pkill
+    dirmngr:
+      - /usr/bin/dirmngr
+      - /usr/bin/dirmngr-client
+    traceroute: /usr/sbin/traceroute
+    wavpack:
+      - /usr/bin/wavpack
+      - /usr/bin/wvunpack
