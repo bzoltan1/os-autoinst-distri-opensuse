@@ -1,0 +1,60 @@
+name: coverage - candidate batch B1 (daemons)
+description: >
+    Throwaway short verification for daemon and high-value targets that are
+    already executed by modules in the production schedule: valgrind tool
+    binaries (the real code behind /usr/bin/valgrind), postfix internals,
+    mariadbd, the fwupd and udisks2 daemons and snmpd. Not for merging.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/valgrind
+  - console/mta
+  - console/mariadb_srv
+  - console/fwupd
+  - console/udisks2
+  - network/snmp
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+    - mkisofs
+  coverage_targets:
+    valgrind:
+      - /usr/libexec/valgrind/memcheck-amd64-linux
+      - /usr/libexec/valgrind/callgrind-amd64-linux
+      - /usr/libexec/valgrind/cachegrind-amd64-linux
+      - /usr/libexec/valgrind/massif-amd64-linux
+      - /usr/libexec/valgrind/helgrind-amd64-linux
+    postfix:
+      - /usr/lib/postfix/bin/master
+      - /usr/lib/postfix/bin/qmgr
+      - /usr/lib/postfix/bin/pickup
+      - /usr/lib/postfix/bin/cleanup
+      - /usr/lib/postfix/bin/bounce
+      - /usr/lib/postfix/bin/local
+      - /usr/lib/postfix/bin/showq
+      - /usr/lib/postfix/bin/trivial-rewrite
+      - /usr/sbin/postdrop
+      - /usr/sbin/postlog
+      - /usr/sbin/postqueue
+      - /usr/sbin/postalias
+      - /usr/sbin/postsuper
+      - /usr/sbin/sendmail
+    mariadb: /usr/sbin/mariadbd
+    fwupd:
+      - /usr/bin/fwupdmgr
+      - /usr/libexec/fwupd/fwupd
+    udisks2:
+      - /usr/bin/udisksctl
+      - /usr/libexec/udisks2/udisksd
+    net-snmp:
+      - /usr/sbin/snmpd
+      - /usr/bin/snmpget
+      - /usr/bin/snmpset
+      - /usr/bin/snmpusm
