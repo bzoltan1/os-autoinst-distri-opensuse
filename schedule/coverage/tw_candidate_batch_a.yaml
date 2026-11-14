@@ -1,0 +1,74 @@
+name: coverage - candidate batch A (safe CLI targets)
+description: >
+    Throwaway short verification schedule. Checks that the listed CLI binaries
+    can be shimmed by funkoverage and that the modules exercising them still
+    behave. Boots the prebuilt textmode HDD image. Not for merging.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/shells
+  - console/osinfo_db
+  - console/man_pages
+  - console/sysstat
+  - console/quota
+  - security/pam/pam_basic_function
+  - console/run0
+  - security/selinux/selinuxexeccon
+  - security/pam/pam_u2f
+  - console/oqa_agnostic/gpg_agnostic
+  - console/rpm
+  - console/cryptsetup
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+    - python3-pytest
+    - libgcrypt20-hmac
+  coverage_targets:
+    ksh: /usr/bin/ksh93
+    osinfo-db-tools: /usr/bin/osinfo-query
+    groff:
+      - /usr/bin/groff
+      - /usr/bin/troff
+      - /usr/bin/tbl
+      - /usr/bin/grotty
+    man:
+      - /usr/bin/man
+      - /usr/libexec/man-db/mandb
+    sysstat:
+      - /usr/lib64/sa/sadc
+    quota:
+      - /usr/sbin/setquota
+      - /usr/sbin/repquota
+      - /usr/sbin/quotacheck
+      - /usr/sbin/quotaon
+    shadow:
+      - /usr/sbin/useradd
+      - /usr/sbin/chpasswd
+    systemd:
+      - /usr/bin/run0
+      - /usr/bin/systemd-run
+    selinux-tools:
+      - /usr/sbin/selinuxenabled
+      - /usr/sbin/selinuxexeccon
+      - /usr/sbin/sefcontext_compile
+    pam_u2f: /usr/bin/pamu2fcfg
+    gpg2:
+      - /usr/bin/gpg
+      - /usr/bin/gpg-connect-agent
+      - /usr/libexec/keyboxd
+      - /usr/bin/gpgconf
+      - /usr/bin/gpg-agent
+    rpm: /usr/bin/rpm
+    util-linux:
+      - /usr/sbin/losetup
+      - /usr/sbin/fstrim
+    device-mapper: /usr/sbin/dmsetup
+    e2fsprogs: /usr/sbin/mkfs.ext3
+    cryptsetup: /usr/sbin/cryptsetup
