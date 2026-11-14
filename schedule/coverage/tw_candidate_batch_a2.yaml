@@ -1,0 +1,62 @@
+name: coverage - candidate batch A2 (corrected CLI targets)
+description: >
+    Throwaway short verification schedule, corrected after batch A. Drops
+    paths that cannot be instrumented (run0 symlink, ksh93 thin launcher,
+    rpm 1-function debuginfo) and non-exercised/tiny targets. Uses libosinfo
+    for osinfo-query. Not for merging.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/osinfo_db
+  - console/man_pages
+  - console/sysstat
+  - console/quota
+  - security/pam/pam_basic_function
+  - console/run0
+  - security/selinux/selinuxexeccon
+  - console/oqa_agnostic/gpg_agnostic
+  - console/cryptsetup
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+    - python3-pytest
+    - libgcrypt20-hmac
+  coverage_targets:
+    libosinfo: /usr/bin/osinfo-query
+    groff:
+      - /usr/bin/groff
+      - /usr/bin/troff
+      - /usr/bin/tbl
+      - /usr/bin/grotty
+    man:
+      - /usr/bin/man
+      - /usr/libexec/man-db/mandb
+    sysstat:
+      - /usr/lib64/sa/sadc
+    quota:
+      - /usr/sbin/setquota
+      - /usr/sbin/repquota
+      - /usr/sbin/quotacheck
+      - /usr/sbin/quotaon
+    shadow:
+      - /usr/sbin/useradd
+      - /usr/sbin/chpasswd
+    systemd:
+      - /usr/bin/systemd-run
+    selinux-tools:
+      - /usr/sbin/sefcontext_compile
+    gpg2:
+      - /usr/bin/gpg
+      - /usr/bin/gpg-connect-agent
+      - /usr/bin/gpgconf
+      - /usr/bin/gpg-agent
+    device-mapper: /usr/sbin/dmsetup
+    e2fsprogs: /usr/sbin/mkfs.ext3
+    cryptsetup: /usr/sbin/cryptsetup
