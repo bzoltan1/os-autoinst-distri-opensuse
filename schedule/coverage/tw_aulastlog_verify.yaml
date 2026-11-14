@@ -1,0 +1,22 @@
+name: coverage - aulastlog dedicated user verification
+description: >
+    Throwaway o3 schedule to reproduce the full-schedule conflict where
+    security/pam/pam_basic_function already creates user "suse". Not for merging.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - security/pam/pam_basic_function
+  - console/sshd
+  - security/audit/aulastlog
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    audit: /usr/bin/aulastlog
