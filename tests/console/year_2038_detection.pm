@@ -84,7 +84,7 @@ sub run {
 
     # chronyd needs a moment to notice the clock jump before it can step
     # the clock; poll the clock itself instead of a fixed journal message
-    unless (script_retry('chronyc makestep && date +"%Y-%m-%d" | grep -v 2038', delay => 2, retry => 30, die => 0) == 0) {
+    unless (script_retry('chronyc makestep && date +"%Y-%m-%d" | grep -v 2038', delay => 2, retry => 1, die => 0) == 0) {
         record_info("poo#127343", "Time sync with NTP server failed");
         systemctl('stop chronyd.service');
         # Set time stamp when we start the test
