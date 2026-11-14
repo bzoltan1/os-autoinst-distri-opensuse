@@ -1,0 +1,34 @@
+name: coverage - candidate batch B2 (new modules and compiler)
+description: >
+    Throwaway short verification for the new mdadm and a2ps modules and for
+    the gcc/binutils internals (cc1, collect2, ld.bfd) executed by the gcc
+    module. mdadm uses loop devices, so it works on a single disk. Not for
+    merging.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - console/gcc
+  - console/mdadm
+  - console/a2ps
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    gcc16:
+      - /usr/bin/gcc-16
+      - /usr/lib64/gcc/x86_64-suse-linux/16/collect2
+    cpp16:
+      - /usr/lib64/gcc/x86_64-suse-linux/16/cc1
+    binutils:
+      - /usr/bin/ld.bfd
+    mdadm: /usr/sbin/mdadm
+    util-linux:
+      - /usr/sbin/losetup
+    a2ps: /usr/bin/a2ps
