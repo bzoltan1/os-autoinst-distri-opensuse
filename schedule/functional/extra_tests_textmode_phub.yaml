@@ -6,6 +6,7 @@ schedule:
     - installation/bootloader_start
     - boot/boot_to_desktop
     - console/add_phub_extension
+    - '{{xrdp}}'
     - console/vmstat
     - console/libjpeg_turbo
     - console/libgit2
@@ -15,6 +16,10 @@ schedule:
     - console/coredump_collect  # For coredumps during the suite. Please put near end.
     - console/zypper_log_packages  # Records packages installed in the suite. Please put at end.
 conditional_schedule:
+    xrdp:
+        VERSION:
+            '15-SP7':
+                - console/oqa_agnostic/xrdp_agnostic
     wpa_supplicant:
         ARCH:
             x86_64:

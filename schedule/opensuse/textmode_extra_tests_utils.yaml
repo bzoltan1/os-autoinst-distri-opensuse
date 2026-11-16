@@ -22,6 +22,10 @@ conditional_schedule:
         VERSION:
             Tumbleweed:
                 - console/opencode
+    xrdp:
+        VERSION:
+            Tumbleweed:
+                - console/oqa_agnostic/xrdp_agnostic
     steamcmd:
         ARCH:
             x86_64:
@@ -61,6 +65,7 @@ schedule:
     - console/rsync
     - console/shells
     - console/oqa_agnostic/sudo_agnostic
+    - '{{xrdp}}'
     - console/dstat
     - console/pciutils
     - console/mdadm
