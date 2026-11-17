@@ -21,6 +21,10 @@ sub run {
     # unions every functions log.
     script_run('rm -f /var/coverage/data/*_functions.log /var/coverage/data/*_called.log');
 
+    # Restore the pre-shim binary before changing packages; otherwise the
+    # uninstall later puts the old binary back over the upgraded one.
+    assert_script_run("funkoverage uninstall $bin", timeout => 300);
+
     # The snapshot debug repo can be newer than the installed binary, and
     # funkoverage needs matching debuginfo. Install the exact version from the
     # job's snapshot debug repo when the versions differ.
@@ -66,7 +70,6 @@ sub run {
 
     # The binary has 356647 function symbols, mostly dependencies. Trace only
     # Grafana's own code.
-    assert_script_run("funkoverage uninstall $bin", timeout => 300);
     my $count = script_output("funkoverage enumerate --no-libs --include '^github\\.com/grafana/grafana/' $bin | wc -l", timeout => 300);
     record_info('filtered functions', $count);
     assert_script_run("funkoverage install --include '^github\\.com/grafana/grafana/' $bin", timeout => 900);
