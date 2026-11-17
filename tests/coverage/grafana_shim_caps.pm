@@ -14,7 +14,7 @@ sub run {
     assert_script_run('mkdir -p /etc/systemd/system/grafana-server.service.d');
     write_sut_file(
         '/etc/systemd/system/grafana-server.service.d/coverage_caps.conf',
-        "[Service]\nCapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_DAC_READ_SEARCH CAP_SYS_RESOURCE\nNoNewPrivileges=no\nTimeoutStartSec=600\nTimeoutStopSec=60\n"
+        "[Service]\nCapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_DAC_READ_SEARCH CAP_SYS_RESOURCE\nNoNewPrivileges=no\nTimeoutStartSec=600\nTimeoutStopSec=300\n"
     );
     assert_script_run('systemctl daemon-reload');
 }
