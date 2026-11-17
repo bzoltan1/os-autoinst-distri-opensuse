@@ -29,9 +29,10 @@ sub run {
     my $dbg = script_output("rpm -q --qf '%{VERSION}-%{RELEASE}' grafana-debuginfo", proceed_on_failure => 1);
     $dbg =~ s/\s+$//;
     if ($dbg ne $ver) {
-        my $mirror = get_var('MIRROR_HTTPS') // get_var('MIRROR_HTTP');
+        my $mirror = get_var('MIRROR_PREFIX') // get_var('MIRROR_HTTPS') // get_var('MIRROR_HTTP');
         my $repo = get_var('REPO_OSS_DEBUG');
         if ($mirror && $repo) {
+            record_info('debug repo', "$mirror/$repo");
             script_run('zypper rr snapshot-debug');
             assert_script_run("zypper ar -f -p 1 '$mirror/$repo' snapshot-debug");
             assert_script_run('zypper --gpg-auto-import-keys ref snapshot-debug', timeout => 300);
