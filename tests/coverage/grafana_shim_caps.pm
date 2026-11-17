@@ -18,6 +18,7 @@ sub run {
         "[Service]\nCapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_DAC_READ_SEARCH CAP_SYS_RESOURCE\nNoNewPrivileges=no\nTimeoutStartSec=600\nTimeoutStopSec=300\nKillMode=process\nEnvironmentFile=/etc/sysconfig/grafana-server-coverage\nEnvironment=FUNKOVERAGE_DEBUG=1\n"
     );
     assert_script_run('systemctl daemon-reload');
+    script_run('systemctl stop grafana-server');
 }
 
 1;
