@@ -24,6 +24,9 @@ sub run {
     # The binary has 356647 function symbols, mostly dependencies. Trace only
     # Grafana's own code.
     assert_script_run("funkoverage uninstall $bin", timeout => 300);
+    record_info('packages', script_output('rpm -q grafana grafana-debuginfo'));
+    my $count = script_output("funkoverage enumerate --no-libs --include '^github\\.com/grafana/grafana/' $bin | wc -l", timeout => 300);
+    record_info('filtered functions', $count);
     assert_script_run("funkoverage install --include '^github\\.com/grafana/grafana/' $bin", timeout => 900);
 
     # grafana-server.service blocks the shim with an empty capability set and
