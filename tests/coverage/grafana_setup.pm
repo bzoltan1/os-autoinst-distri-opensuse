@@ -36,11 +36,30 @@ sub run {
             script_run('zypper rr snapshot-debug');
             assert_script_run("zypper ar -f -p 1 '$mirror/$repo' snapshot-debug");
             assert_script_run('zypper --gpg-auto-import-keys ref snapshot-debug', timeout => 300);
-            zypper_call("in --oldpackage --from snapshot-debug grafana-debuginfo-$ver", timeout => 600);
+            zypper_call("in --oldpackage --from snapshot-debug grafana-debuginfo-$ver", timeout => 600, exitcode => [0, 104, 106]);
             script_run('zypper rr snapshot-debug');
         }
         $dbg = script_output("rpm -q --qf '%{VERSION}-%{RELEASE}' grafana-debuginfo", proceed_on_failure => 1);
         $dbg =~ s/\s+$//;
+
+        # The snapshot debug repo may not ship the old debuginfo. In that case
+        # install the binary matching the newer debuginfo from the snapshot
+        # OSS repo.
+        if ($dbg ne $ver) {
+            my $oss_repo = get_var('REPO_OSS');
+            if ($mirror && $oss_repo) {
+                record_info('snapshot OSS repo', "$mirror/$oss_repo");
+                script_run('zypper rr snapshot-oss-coverage');
+                assert_script_run("zypper ar -f -p 1 '$mirror/$oss_repo' snapshot-oss-coverage");
+                assert_script_run('zypper --gpg-auto-import-keys ref snapshot-oss-coverage', timeout => 300);
+                zypper_call("in --oldpackage --from snapshot-oss-coverage grafana-$dbg", timeout => 600, exitcode => [0, 104, 106]);
+                script_run('zypper rr snapshot-oss-coverage');
+            }
+            $ver = script_output("rpm -q --qf '%{VERSION}-%{RELEASE}' grafana");
+            $ver =~ s/\s+$//;
+            $dbg = script_output("rpm -q --qf '%{VERSION}-%{RELEASE}' grafana-debuginfo", proceed_on_failure => 1);
+            $dbg =~ s/\s+$//;
+        }
         die "grafana-debuginfo $dbg does not match grafana $ver" if $dbg ne $ver;
     }
     record_info('packages', "grafana $ver, grafana-debuginfo $dbg");
