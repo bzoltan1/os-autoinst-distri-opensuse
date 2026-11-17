@@ -1,21 +1,23 @@
 name: coverage - grafana candidate check
-description: >
-    Throwaway o3 schedule for console/oqa_agnostic/grafana_agnostic.
-    Not for merging.
+description: 'Throwaway o3 schedule for console/oqa_agnostic/grafana_agnostic. Not
+  for merging.
+
+  '
 schedule:
-  - installation/bootloader_start
-  - boot/boot_to_desktop
-  - console/system_prepare
-  - console/consoletest_setup
-  - coverage/coverage_setup
-  - console/oqa_agnostic/grafana_agnostic
-  - coverage/coverage_report
+- installation/bootloader_start
+- boot/boot_to_desktop
+- console/system_prepare
+- console/consoletest_setup
+- coverage/coverage_setup
+- coverage/grafana_shim_caps
+- console/oqa_agnostic/grafana_agnostic
+- coverage/coverage_report
 test_data:
   helper_packages:
-    - gzip
-    - iputils
-    - systemd
-    - wget
+  - gzip
+  - iputils
+  - systemd
+  - wget
   coverage_targets:
     grafana:
-      - /usr/libexec/grafana/grafana
+    - /usr/libexec/grafana/grafana
