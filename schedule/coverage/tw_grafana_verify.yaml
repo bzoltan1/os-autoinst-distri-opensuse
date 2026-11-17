@@ -9,6 +9,7 @@ schedule:
 - console/system_prepare
 - console/consoletest_setup
 - coverage/coverage_setup
+- coverage/grafana_include_filter
 - coverage/grafana_shim_caps
 - console/oqa_agnostic/grafana_agnostic
 - coverage/coverage_report
