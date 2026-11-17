@@ -7,7 +7,7 @@
 use Mojo::Base 'opensusebasetest';
 use testapi;
 use serial_terminal 'select_serial_terminal';
-use utils 'write_sut_file';
+use utils qw(write_sut_file zypper_call);
 
 sub run {
     select_serial_terminal;
@@ -21,10 +21,32 @@ sub run {
     # unions every functions log.
     script_run('rm -f /var/coverage/data/*_functions.log /var/coverage/data/*_called.log');
 
+    # The snapshot debug repo can be newer than the installed binary, and
+    # funkoverage needs matching debuginfo. Install the exact version from the
+    # job's snapshot debug repo when the versions differ.
+    my $ver = script_output("rpm -q --qf '%{VERSION}-%{RELEASE}' grafana");
+    $ver =~ s/\s+$//;
+    my $dbg = script_output("rpm -q --qf '%{VERSION}-%{RELEASE}' grafana-debuginfo", proceed_on_failure => 1);
+    $dbg =~ s/\s+$//;
+    if ($dbg ne $ver) {
+        my $mirror = get_var('MIRROR_HTTPS') // get_var('MIRROR_HTTP');
+        my $repo = get_var('REPO_OSS_DEBUG');
+        if ($mirror && $repo) {
+            script_run('zypper rr snapshot-debug');
+            assert_script_run("zypper ar -f -p 1 '$mirror/$repo' snapshot-debug");
+            assert_script_run('zypper --gpg-auto-import-keys ref snapshot-debug', timeout => 300);
+            zypper_call("in --oldpackage --from snapshot-debug grafana-debuginfo-$ver", timeout => 600);
+            script_run('zypper rr snapshot-debug');
+        }
+        $dbg = script_output("rpm -q --qf '%{VERSION}-%{RELEASE}' grafana-debuginfo", proceed_on_failure => 1);
+        $dbg =~ s/\s+$//;
+        die "grafana-debuginfo $dbg does not match grafana $ver" if $dbg ne $ver;
+    }
+    record_info('packages', "grafana $ver, grafana-debuginfo $dbg");
+
     # The binary has 356647 function symbols, mostly dependencies. Trace only
     # Grafana's own code.
     assert_script_run("funkoverage uninstall $bin", timeout => 300);
-    record_info('packages', script_output('rpm -q grafana grafana-debuginfo'));
     my $count = script_output("funkoverage enumerate --no-libs --include '^github\\.com/grafana/grafana/' $bin | wc -l", timeout => 300);
     record_info('filtered functions', $count);
     assert_script_run("funkoverage install --include '^github\\.com/grafana/grafana/' $bin", timeout => 900);
