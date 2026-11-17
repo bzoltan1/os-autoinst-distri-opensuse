@@ -25,10 +25,14 @@ sub run {
     upload_logs('/tmp/grafana-journal.txt', failok => 1);
     assert_script_run('ls -l /var/coverage/data > /tmp/coverage-data.txt');
     upload_logs('/tmp/coverage-data.txt', failok => 1);
-    assert_script_run('for f in /var/coverage/data/*_called.log; do [ -e "$f" ] && { echo "== $f"; wc -l "$f"; head -5 "$f"; }; done > /tmp/called-summary.txt');
+    script_run('for f in /var/coverage/data/*_called.log; do [ -e "$f" ] || continue; echo "== $f"; wc -l "$f"; head -5 "$f"; done > /tmp/called-summary.txt');
     upload_logs('/tmp/called-summary.txt', failok => 1);
-    assert_script_run('for f in /var/coverage/data/*_functions.log; do [ -e "$f" ] && { echo "== $f"; wc -l "$f"; }; done > /tmp/functions-summary.txt');
+    script_run('for f in /var/coverage/data/*_functions.log; do [ -e "$f" ] || continue; echo "== $f"; wc -l "$f"; done > /tmp/functions-summary.txt');
     upload_logs('/tmp/functions-summary.txt', failok => 1);
+    assert_script_run('systemctl show grafana-server -p Environment -p KillMode -p CapabilityBoundingSet -p NoNewPrivileges > /tmp/service-props.txt');
+    upload_logs('/tmp/service-props.txt', failok => 1);
+    script_run('ls -l /var/log/grafana > /tmp/log-dir.txt 2>&1');
+    upload_logs('/tmp/log-dir.txt', failok => 1);
 }
 
 1;
