@@ -1,0 +1,19 @@
+name: coverage - grafana schedule verification
+description: Short verification of the Grafana entry in the coverage schedule.
+schedule:
+  - installation/bootloader_start
+  - boot/boot_to_desktop
+  - console/system_prepare
+  - console/consoletest_setup
+  - coverage/coverage_setup
+  - coverage/grafana_setup
+  - console/oqa_agnostic/grafana_agnostic
+  - coverage/coverage_report
+test_data:
+  helper_packages:
+    - gzip
+    - iputils
+    - systemd
+    - wget
+  coverage_targets:
+    grafana: /usr/libexec/grafana/grafana
